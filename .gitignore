@@ -1,0 +1,11 @@
+# Captured images / scratch output
+*.jpg
+*.jpeg
+*.png
+/tmp/
+
+# OS / editor cruft
+.DS_Store
+*~
+.idea/
+.vscode/

@@ -1,0 +1,13 @@
+{
+  "name": "webcam-snap",
+  "version": "1.0.0",
+  "description": "Take a photo from the local webcam (/dev/video0) with ffmpeg and let Claude view and analyze it. Adds a 'webcam-snap' skill that triggers on 'take a photo', 'selfie', or '拍照'.",
+  "author": {
+    "name": "longsizhuo",
+    "email": "longsizhuo@gmail.com"
+  },
+  "homepage": "https://github.com/longsizhuo/claude-webcam-snap",
+  "repository": "https://github.com/longsizhuo/claude-webcam-snap",
+  "license": "MIT",
+  "keywords": ["webcam", "camera", "photo", "selfie", "ffmpeg", "v4l2", "vision", "skill"]
+}
