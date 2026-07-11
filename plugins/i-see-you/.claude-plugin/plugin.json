@@ -1,6 +1,6 @@
 {
   "name": "i-see-you",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Give the agent eyes: capture a photo from the local webcam with ffmpeg and let it view and analyze it. Cross-platform (Linux/macOS/Windows). Adds an 'i-see-you' skill that triggers on '看看我', 'take a photo', 'selfie', or '拍照'.",
   "author": {
     "name": "longsizhuo",

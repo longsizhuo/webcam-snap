@@ -17,21 +17,23 @@ The only per-OS difference is ffmpeg's capture backend and how a device is named
 
 ## Capture (recommended — use the helper script)
 
-Both helper scripts auto-detect the first camera, warm up auto-exposure (skip the first 30 frames), check for ffmpeg, and fall back to the device's default resolution if the requested one is rejected.
+Both helper scripts auto-detect the first camera, warm up auto-exposure (skip the first 30 frames), locate ffmpeg (self-healing PATH on Windows), and fall back to the device's default resolution if the requested one is rejected.
+
+**For a non-technical user, pass the auto-install flag** (`-AutoInstall` on Windows, `--auto-install` on Linux/macOS): if ffmpeg is missing the script installs it (winget/scoop/choco, or brew/apt/dnf) and then captures — one shot, no manual setup.
 
 **Linux / macOS** (bash):
 
 ```bash
-bash scripts/take_selfie.sh                       # -> $TMPDIR/selfie_<timestamp>.jpg @ 1280x720
-bash scripts/take_selfie.sh /tmp/selfie.jpg 1280x720
+bash scripts/take_selfie.sh --auto-install                    # -> $TMPDIR/selfie_<timestamp>.jpg @ 1280x720
+bash scripts/take_selfie.sh /tmp/selfie.jpg 1280x720 --auto-install
 ```
 
 **Windows** (PowerShell):
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File scripts/take_selfie.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts/take_selfie.ps1 -AutoInstall
 powershell -NoProfile -ExecutionPolicy Bypass -File scripts/take_selfie.ps1 `
-    -Output "$env:TEMP\selfie.jpg" -Resolution 1280x720 -Device "Integrated Camera"
+    -AutoInstall -Output "$env:TEMP\selfie.jpg" -Resolution 1280x720 -Device "Integrated Camera"
 ```
 
 Each script prints a `文件路径:` line with the final path — Read that path to see the image.

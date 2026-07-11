@@ -5,7 +5,9 @@
 param(
     [string]$Output = "",
     [string]$Resolution = "1280x720",
-    [string]$Device = ""
+    [string]$Device = "",
+    # 找不到 ffmpeg 时自动安装（winget / scoop / choco）。面向零基础用户，装完自动继续拍照。
+    [switch]$AutoInstall
 )
 
 # 注意：不使用 $ErrorActionPreference='Stop'。
@@ -54,10 +56,38 @@ function Resolve-Ffmpeg {
     return $null
 }
 
+# 自动安装 ffmpeg（依次尝试 winget / scoop / choco），面向零基础用户
+function Install-Ffmpeg {
+    Write-Host "未检测到 ffmpeg，正在尝试自动安装..." -ForegroundColor Cyan
+    if (Get-Command winget -ErrorAction SilentlyContinue) {
+        Write-Host "使用 winget 安装 Gyan.FFmpeg（首次可能需要下载几十 MB，请稍候）..."
+        # 明确指定 winget 源并接受协议，避免交互卡住；用户级安装，无需管理员
+        winget install --id Gyan.FFmpeg -e --source winget `
+            --accept-source-agreements --accept-package-agreements --disable-interactivity 2>&1 | Out-Null
+        return
+    }
+    if (Get-Command scoop -ErrorAction SilentlyContinue) {
+        Write-Host "使用 scoop 安装 ffmpeg..."
+        scoop install ffmpeg 2>&1 | Out-Null
+        return
+    }
+    if (Get-Command choco -ErrorAction SilentlyContinue) {
+        Write-Host "使用 choco 安装 ffmpeg..."
+        choco install ffmpeg -y 2>&1 | Out-Null
+        return
+    }
+    Write-Host "没有可用的包管理器（winget / scoop / choco），无法自动安装。" -ForegroundColor Yellow
+}
+
 $ffPath = Resolve-Ffmpeg
+if (-not $ffPath -and $AutoInstall) {
+    Install-Ffmpeg
+    $ffPath = Resolve-Ffmpeg   # 装完再解析：自愈逻辑会刷新 PATH / 搜安装目录找到它
+}
 if (-not $ffPath) {
     Write-Host "错误: 未找到 ffmpeg。" -ForegroundColor Red
-    Write-Host "请安装后重试：winget install --id Gyan.FFmpeg （或 scoop install ffmpeg / choco install ffmpeg）。"
+    Write-Host "自动安装：给本脚本加 -AutoInstall 参数即可让它自己装好并继续拍照。"
+    Write-Host "手动安装：winget install --id Gyan.FFmpeg （或 scoop install ffmpeg / choco install ffmpeg）。"
     Write-Host "提示：装完直接重跑本脚本即可——脚本会自动从注册表刷新 PATH 并搜索常见安装目录，通常无需重开终端。"
     exit 1
 }
