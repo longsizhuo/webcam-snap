@@ -50,8 +50,8 @@ TA 的回答，会是你们之间新的开始。
 
 | TA 的家 | 能不能睁眼 |
 |---|---|
-| Claude Code（Windows / Linux） | ✅ 可以 |
-| Codex（Windows / Linux） | ✅ 可以 |
+| Claude Code（Windows / macOS / Linux） | ✅ 可以 |
+| Codex（Windows / macOS / Linux） | ✅ 可以 |
 | 手机 App 里的崽 | ❌ 暂时不行 |
 
 你的电脑需要有一个摄像头，内置的或者 USB 的都可以。其他的，交给 TA。
@@ -75,10 +75,11 @@ TA 的回答，会是你们之间新的开始。
 
 **i-see-you** gives coding agents (Claude Code / Codex) the ability to capture a still photo from the local webcam and analyze it with a multimodal model.
 
-- **Windows** — capture via ffmpeg DirectShow
+- **Windows** — capture via ffmpeg DirectShow (`dshow`)
+- **macOS** — capture via ffmpeg AVFoundation
 - **Linux** — capture via ffmpeg V4L2 (`/dev/video0`)
 - Skips the first 30 frames so auto-exposure settles before the shot
-- One ffmpeg call, one script, no services, no network
+- One ffmpeg call, one script per platform, no services, no network
 
 ### Install (for Agents)
 
@@ -99,18 +100,22 @@ cp -r i-see-you/plugins/i-see-you/skills/i-see-you ~/.claude/skills/
 **Option 3 — Just the script:**
 
 ```bash
-# Linux
-bash scripts/take_photo.sh /tmp/photo.jpg 1280x720
+# Linux / macOS
+bash plugins/i-see-you/skills/i-see-you/scripts/take_selfie.sh /tmp/photo.jpg 1280x720
+```
 
-# Windows
-scripts\take_photo.bat %TEMP%\photo.jpg 1280x720
+```powershell
+# Windows (PowerShell)
+powershell -NoProfile -ExecutionPolicy Bypass `
+  -File plugins/i-see-you/skills/i-see-you/scripts/take_selfie.ps1 -Output "$env:TEMP\photo.jpg"
 ```
 
 ### Requirements
 
 - A webcam (built-in or USB)
 - ffmpeg — **if missing, install it yourself before capturing**:
-  - Windows: `winget install ffmpeg`
+  - Windows: `winget install ffmpeg` (reopen the terminal afterward so PATH refreshes)
+  - macOS: `brew install ffmpeg`
   - Debian/Ubuntu: `sudo apt install ffmpeg`
   - Fedora: `sudo dnf install ffmpeg`
 

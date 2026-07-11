@@ -1,6 +1,6 @@
-# How to use webcam-snap
+# How to use i-see-you
 
-A step-by-step guide to installing, triggering, and troubleshooting the **webcam-snap** skill/plugin on Linux, macOS, and Windows.
+A step-by-step guide to installing, triggering, and troubleshooting the **i-see-you** skill/plugin on Linux, macOS, and Windows.
 
 ---
 
@@ -39,11 +39,11 @@ If listing/formats fails with a permission error, jump to [Troubleshooting](#tro
 In an **interactive** session (not a one-shot/headless run):
 
 ```
-/plugin marketplace add longsizhuo/webcam-snap
-/plugin install webcam-snap@webcam-snap-marketplace
+/plugin marketplace add longsizhuo/i-see-you
+/plugin install i-see-you@i-see-you-marketplace
 ```
 
-`/plugin marketplace add` registers this repo as a source; `/plugin install` pulls the `webcam-snap` plugin from it. Verify with `/plugin` (you should see webcam-snap listed and enabled).
+`/plugin marketplace add` registers this repo as a source; `/plugin install` pulls the `i-see-you` plugin from it. Verify with `/plugin` (you should see i-see-you listed and enabled).
 
 ### Method 2 — Standalone skill
 
@@ -51,17 +51,17 @@ Drop the skill straight into your personal skills directory:
 
 ```bash
 # Linux / macOS
-git clone https://github.com/longsizhuo/webcam-snap.git
-cp -r webcam-snap/plugins/webcam-snap/skills/webcam-snap ~/.claude/skills/
+git clone https://github.com/longsizhuo/i-see-you.git
+cp -r i-see-you/plugins/i-see-you/skills/i-see-you ~/.claude/skills/
 ```
 
 ```powershell
 # Windows
-git clone https://github.com/longsizhuo/webcam-snap.git
-Copy-Item -Recurse webcam-snap/plugins/webcam-snap/skills/webcam-snap "$env:USERPROFILE\.claude\skills\"
+git clone https://github.com/longsizhuo/i-see-you.git
+Copy-Item -Recurse i-see-you/plugins/i-see-you/skills/i-see-you "$env:USERPROFILE\.claude\skills\"
 ```
 
-The final path must be `.../.claude/skills/webcam-snap/SKILL.md`. Skills are loaded at session start, so **start a new session** afterward.
+The final path must be `.../.claude/skills/i-see-you/SKILL.md`. Skills are loaded at session start, so **start a new session** afterward.
 
 ### Method 3 — Script only
 
@@ -69,22 +69,22 @@ No agent needed — the capture script stands on its own:
 
 ```bash
 # Linux / macOS
-bash plugins/webcam-snap/skills/webcam-snap/scripts/take_selfie.sh ~/Pictures/snap.jpg 1280x720
+bash plugins/i-see-you/skills/i-see-you/scripts/take_selfie.sh ~/Pictures/snap.jpg 1280x720
 ```
 
 ```powershell
 # Windows
 powershell -NoProfile -ExecutionPolicy Bypass `
-  -File plugins/webcam-snap/skills/webcam-snap/scripts/take_selfie.ps1 -Output "$env:USERPROFILE\Pictures\snap.jpg"
+  -File plugins/i-see-you/skills/i-see-you/scripts/take_selfie.ps1 -Output "$env:USERPROFILE\Pictures\snap.jpg"
 ```
 
 ---
 
 ## 3. Trigger it
 
-Skills activate automatically from natural language. Any of these will invoke webcam-snap:
+Skills activate automatically from natural language. Any of these will invoke i-see-you:
 
-- "take a photo" / "take a selfie" / "take a picture"
+- "看看我" / "take a photo" / "take a selfie" / "take a picture"
 - "拍张照片" / "自拍一张" / "看看现在的环境" / "看看房间"
 - "what does the camera see right now?"
 - "拍张照片并分析" (the agent captures **and** describes the frame)
@@ -189,5 +189,5 @@ ffmpeg -f dshow -list_options true -i video="Integrated Camera"
 
 ## Uninstall
 
-- **Plugin**: `/plugin uninstall webcam-snap@webcam-snap-marketplace`
-- **Standalone skill**: `rm -rf ~/.claude/skills/webcam-snap` (Windows: `Remove-Item -Recurse -Force "$env:USERPROFILE\.claude\skills\webcam-snap"`)
+- **Plugin**: `/plugin uninstall i-see-you@i-see-you-marketplace`
+- **Standalone skill**: `rm -rf ~/.claude/skills/i-see-you` (Windows: `Remove-Item -Recurse -Force "$env:USERPROFILE\.claude\skills\i-see-you"`)

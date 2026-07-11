@@ -1,9 +1,9 @@
 ---
-name: webcam-snap
-description: Take a still photo from the machine's local webcam with ffmpeg, then read/analyze or send the image. Cross-platform — Linux (V4L2), macOS (AVFoundation), Windows (DirectShow). Trigger when the user asks to "take a photo", "take a picture", "selfie", "拍照", "自拍", "看看现在的环境/房间", or when the agent needs to visually observe the physical environment through the machine's camera. Requires ffmpeg and a local camera.
+name: i-see-you
+description: Take a still photo from the machine's local webcam with ffmpeg, then read/analyze or send the image. Cross-platform — Linux (V4L2), macOS (AVFoundation), Windows (DirectShow). Trigger when the user asks to "看看我", "take a photo", "take a picture", "selfie", "拍照", "自拍", "看看现在的环境/房间", or when the agent needs to visually observe the physical environment through the machine's camera. Requires ffmpeg and a local camera.
 ---
 
-# Webcam Snap
+# i-see-you
 
 Capture a single frame from the machine's local webcam via ffmpeg, then either **read** the JPEG (multimodal models can see it directly) or **send** it to the user.
 

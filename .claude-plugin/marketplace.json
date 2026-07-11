@@ -1,21 +1,21 @@
 {
   "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
-  "name": "webcam-snap-marketplace",
-  "description": "Marketplace hosting the webcam-snap plugin: let the agent take and analyze photos from a local webcam via ffmpeg, on Linux, macOS, or Windows.",
+  "name": "i-see-you-marketplace",
+  "description": "Marketplace hosting the i-see-you plugin: give a coding agent eyes — capture and analyze a photo from the local webcam via ffmpeg, on Linux, macOS, or Windows.",
   "owner": {
     "name": "longsizhuo",
     "email": "longsizhuo@gmail.com"
   },
   "plugins": [
     {
-      "name": "webcam-snap",
-      "description": "Take a photo from the local webcam with ffmpeg, then let the agent view and analyze it. Cross-platform (Linux/macOS/Windows). Triggers on 'take a photo', 'selfie', '拍照', '看看现在的环境'.",
+      "name": "i-see-you",
+      "description": "Let the agent open its eyes: capture a photo from the local webcam with ffmpeg, then view and analyze it. Cross-platform (Linux/macOS/Windows). Triggers on '看看我', 'take a photo', 'selfie', '拍照', '看看现在的环境'.",
       "author": {
         "name": "longsizhuo"
       },
       "category": "productivity",
-      "source": "./plugins/webcam-snap",
-      "homepage": "https://github.com/longsizhuo/claude-webcam-snap"
+      "source": "./plugins/i-see-you",
+      "homepage": "https://github.com/longsizhuo/i-see-you"
     }
   ]
 }
