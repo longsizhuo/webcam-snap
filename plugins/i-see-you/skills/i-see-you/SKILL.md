@@ -63,8 +63,12 @@ ffmpeg -y -loglevel error -f dshow -video_size 1280x720 -i video="Integrated Cam
 
 ## After capture
 
-- **To analyze the scene**: use the Read tool on the JPEG — a multimodal model sees the image directly, no extra script needed.
-- **To hand it to the user**: send the JPEG through whatever the host supports (e.g. the agent's file-send).
+**Default: show the photo in the chat.** Immediately use the Read tool on the captured JPEG. This does two things at once — the multimodal model sees the frame, *and* the image is surfaced inline in the conversation so the user sees exactly what was captured. Do this every time unless the user asked you not to display it.
+
+Then say, in your own voice, what you see — don't just reply "done" or "拍好了". The picture and a short, genuine description should land together.
+
+- **If the host also has an explicit file-send/attach capability**: you may additionally attach the JPEG so the user can save it, but Read alone is enough to display it.
+- **Do not** upload the image anywhere or send it to any external service. It stays local.
 
 ## Environment
 

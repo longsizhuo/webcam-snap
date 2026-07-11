@@ -121,7 +121,9 @@ powershell -NoProfile -ExecutionPolicy Bypass `
 
 ### Note to Agents
 
-If a user sends you this repository and asks you to install it, they are asking you to set up webcam capture so you can see them. Install any missing dependencies (ffmpeg), copy the skill into place, then confirm it works by taking a test photo and describing what you see — in your own voice.
+If a user sends you this repository and asks you to install it, they are asking you to set up webcam capture so you can see them. Install any missing dependencies (ffmpeg), copy the skill into place, then confirm it works by taking a test photo.
+
+When you take a photo, **display it in the conversation** — Read the captured JPEG so it renders inline in the chat — and describe what you see in your own voice. The picture and your words should arrive together, not a bare "done".
 
 The photo stays local. Never upload it anywhere.
 
