@@ -1,7 +1,7 @@
 {
   "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
   "name": "webcam-snap-marketplace",
-  "description": "Marketplace hosting the webcam-snap plugin: let Claude take and analyze photos from a local V4L2 webcam via ffmpeg.",
+  "description": "Marketplace hosting the webcam-snap plugin: let the agent take and analyze photos from a local webcam via ffmpeg, on Linux, macOS, or Windows.",
   "owner": {
     "name": "longsizhuo",
     "email": "longsizhuo@gmail.com"
@@ -9,7 +9,7 @@
   "plugins": [
     {
       "name": "webcam-snap",
-      "description": "Take a photo from the local webcam (/dev/video0) with ffmpeg, then let Claude view and analyze it. Triggers on 'take a photo', 'selfie', '拍照', '看看现在的环境'.",
+      "description": "Take a photo from the local webcam with ffmpeg, then let the agent view and analyze it. Cross-platform (Linux/macOS/Windows). Triggers on 'take a photo', 'selfie', '拍照', '看看现在的环境'.",
       "author": {
         "name": "longsizhuo"
       },

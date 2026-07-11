@@ -1,34 +1,45 @@
 # How to use webcam-snap
 
-A step-by-step guide to installing, triggering, and troubleshooting the **webcam-snap** skill/plugin.
+A step-by-step guide to installing, triggering, and troubleshooting the **webcam-snap** skill/plugin on Linux, macOS, and Windows.
 
 ---
 
 ## 1. Check your prerequisites
 
+**Linux**
+
 ```bash
-# Is there a webcam?
-ls -la /dev/video*        # expect /dev/video0 (maybe video1, ...)
-
-# Is ffmpeg installed?
-command -v ffmpeg || sudo apt install ffmpeg
-
-# Can you read the device? (no "permission denied")
-ffmpeg -f v4l2 -list_formats all -i /dev/video0
+ls -la /dev/video*                            # expect /dev/video0 (maybe video1, ...)
+command -v ffmpeg || sudo apt install ffmpeg  # install if missing
+ffmpeg -f v4l2 -list_formats all -i /dev/video0   # no "permission denied"?
 ```
 
-If the last command fails with a permission error, jump to [Troubleshooting](#troubleshooting).
+**macOS**
+
+```bash
+command -v ffmpeg || brew install ffmpeg
+ffmpeg -f avfoundation -list_devices true -i ""   # lists cameras with [index]
+```
+
+**Windows** (PowerShell)
+
+```powershell
+Get-Command ffmpeg -ErrorAction SilentlyContinue   # or: winget install --id Gyan.FFmpeg
+ffmpeg -f dshow -list_devices true -i dummy        # lists cameras by "name"
+```
+
+If listing/formats fails with a permission error, jump to [Troubleshooting](#troubleshooting).
 
 ---
 
 ## 2. Install
 
-### Method 1 — Plugin marketplace (recommended for Claude Code users)
+### Method 1 — Plugin marketplace (recommended)
 
-In an **interactive** Claude Code session (not a one-shot/headless run):
+In an **interactive** session (not a one-shot/headless run):
 
 ```
-/plugin marketplace add longsizhuo/claude-webcam-snap
+/plugin marketplace add longsizhuo/webcam-snap
 /plugin install webcam-snap@webcam-snap-marketplace
 ```
 
@@ -36,21 +47,35 @@ In an **interactive** Claude Code session (not a one-shot/headless run):
 
 ### Method 2 — Standalone skill
 
-If you don't use the plugin system, drop the skill straight into your personal skills directory:
+Drop the skill straight into your personal skills directory:
 
 ```bash
-git clone https://github.com/longsizhuo/claude-webcam-snap.git
-cp -r claude-webcam-snap/plugins/webcam-snap/skills/webcam-snap ~/.claude/skills/
+# Linux / macOS
+git clone https://github.com/longsizhuo/webcam-snap.git
+cp -r webcam-snap/plugins/webcam-snap/skills/webcam-snap ~/.claude/skills/
 ```
 
-The final path must be `~/.claude/skills/webcam-snap/SKILL.md`. Skills are loaded at session start, so **start a new Claude Code session** afterward.
+```powershell
+# Windows
+git clone https://github.com/longsizhuo/webcam-snap.git
+Copy-Item -Recurse webcam-snap/plugins/webcam-snap/skills/webcam-snap "$env:USERPROFILE\.claude\skills\"
+```
+
+The final path must be `.../.claude/skills/webcam-snap/SKILL.md`. Skills are loaded at session start, so **start a new session** afterward.
 
 ### Method 3 — Script only
 
-No Claude needed — the capture script stands on its own:
+No agent needed — the capture script stands on its own:
 
 ```bash
+# Linux / macOS
 bash plugins/webcam-snap/skills/webcam-snap/scripts/take_selfie.sh ~/Pictures/snap.jpg 1280x720
+```
+
+```powershell
+# Windows
+powershell -NoProfile -ExecutionPolicy Bypass `
+  -File plugins/webcam-snap/skills/webcam-snap/scripts/take_selfie.ps1 -Output "$env:USERPROFILE\Pictures\snap.jpg"
 ```
 
 ---
@@ -62,78 +87,102 @@ Skills activate automatically from natural language. Any of these will invoke we
 - "take a photo" / "take a selfie" / "take a picture"
 - "拍张照片" / "自拍一张" / "看看现在的环境" / "看看房间"
 - "what does the camera see right now?"
-- "拍张照片并分析" (Claude captures **and** describes the frame)
+- "拍张照片并分析" (the agent captures **and** describes the frame)
 
-Claude will run the capture, then either describe what it sees or send you the JPEG.
+The agent will run the capture, then either describe what it sees or send you the JPEG.
 
 ### Manually, inside a session
 
-You can also just ask Claude to run the capture command:
+You can also just ask the agent to run the capture command for your OS:
 
 ```bash
+# Linux
 ffmpeg -y -loglevel error -f v4l2 -video_size 1280x720 -i /dev/video0 \
+       -vf "select=gte(n\,30)" -frames:v 1 -vsync 0 -f image2 /tmp/selfie.jpg
+
+# macOS (index from -list_devices)
+ffmpeg -y -loglevel error -f avfoundation -framerate 30 -video_size 1280x720 -i "0" \
        -vf "select=gte(n\,30)" -frames:v 1 -vsync 0 -f image2 /tmp/selfie.jpg
 ```
 
-…then ask it to read `/tmp/selfie.jpg`.
+```powershell
+# Windows (name from -list_devices)
+ffmpeg -y -loglevel error -f dshow -video_size 1280x720 -i video="Integrated Camera" `
+       -vf "select=gte(n\,30)" -frames:v 1 -fps_mode passthrough -f image2 "$env:TEMP\selfie.jpg"
+```
+
+…then ask it to read the resulting JPEG.
 
 ---
 
-## 4. The capture script
+## 4. The capture scripts
 
-`scripts/take_selfie.sh [output_path] [resolution]`
+**Linux / macOS** — `scripts/take_selfie.sh [output_path] [resolution]`
 
 | Argument | Default | Example |
 |----------|---------|---------|
-| `output_path` | `/tmp/selfie_<timestamp>.jpg` | `~/Pictures/room.jpg` |
-| `resolution` | `640x480` | `1280x720` |
+| `output_path` | `$TMPDIR/selfie_<timestamp>.jpg` | `~/Pictures/room.jpg` |
+| `resolution` | `1280x720` | `640x480` |
 
-It checks that `ffmpeg` exists, falls back to the first available `/dev/video*` if `video0` is missing, warms up auto-exposure (skips 30 frames), then writes one JPEG and prints the file size.
+It checks that `ffmpeg` exists, picks the backend by `uname` (V4L2 on Linux, AVFoundation on macOS), on Linux falls back to the first available `/dev/video*`, warms up auto-exposure (skips 30 frames), then writes one JPEG and prints the path + size. On macOS, override the camera with `CAMERA_INDEX=1 bash take_selfie.sh`.
+
+**Windows** — `scripts/take_selfie.ps1 [-Output <path>] [-Resolution 1280x720] [-Device "name"]`
+
+Auto-detects the first DirectShow video device (override with `-Device`), warms up auto-exposure, falls back to the device default resolution if the requested one is rejected, then prints the path + size.
 
 ---
 
 ## Troubleshooting
 
-### `Cannot open video device` / permission denied
-
-Your user isn't allowed to read the camera. Add yourself to the `video` group (preferred):
+### `ffmpeg: command not found` / not recognized
 
 ```bash
-sudo usermod -a -G video $USER
-# log out and back in for the group to take effect
+sudo apt install ffmpeg      # Debian / Ubuntu
+sudo dnf install ffmpeg      # Fedora
+brew install ffmpeg          # macOS
 ```
 
-Or, as a quick temporary fix (resets on reboot / device re-plug):
+```powershell
+winget install --id Gyan.FFmpeg    # Windows — then reopen the terminal so PATH refreshes
+```
+
+### Permission denied (Linux) — `Cannot open video device`
+
+Add yourself to the `video` group (preferred):
 
 ```bash
-sudo chmod 666 /dev/video0
+sudo usermod -a -G video $USER   # log out and back in
 ```
 
-### `/dev/video0` does not exist
+Or a quick temporary fix (resets on reboot / re-plug): `sudo chmod 666 /dev/video0`.
+
+### Camera permission (macOS / Windows)
+
+- macOS: System Settings → Privacy & Security → Camera → enable your terminal app. The first capture may trigger the prompt.
+- Windows: Settings → Privacy & security → Camera → allow desktop apps to access the camera.
+
+### The device doesn't exist / is busy
+
+Close any app holding the camera (Zoom, Teams, the Camera app), then list devices:
 
 ```bash
-ls -la /dev/video*
+v4l2-ctl --list-devices                         # Linux (name → /dev/videoN)
+ffmpeg -f avfoundation -list_devices true -i ""  # macOS (index)
+ffmpeg -f dshow -list_devices true -i dummy      # Windows (name)
 ```
 
-Use whichever index exists (e.g. `/dev/video2`). The helper script already auto-selects the first available device.
+On Linux pass the right `/dev/videoN`; on macOS pass the right index (`CAMERA_INDEX`); on Windows pass the right `-Device "Name"`.
 
 ### The photo is black, gray, or over-exposed
 
 The camera needs longer to settle. Increase the warm-up frame count in the ffmpeg filter — change `gte(n\,30)` to `gte(n\,60)` — or raise the resolution so the driver initializes the full sensor.
 
-### Multiple cameras / picking a specific one
+### Requested resolution rejected
 
-```bash
-v4l2-ctl --list-devices          # shows names → /dev/videoN mapping
-```
+Omit `-video_size` (the helper scripts auto-fall-back to the device default), or query supported modes on Windows:
 
-Then pass the right device into ffmpeg (`-i /dev/videoN`).
-
-### `ffmpeg: command not found`
-
-```bash
-sudo apt install ffmpeg      # Debian / Ubuntu
-sudo dnf install ffmpeg      # Fedora
+```powershell
+ffmpeg -f dshow -list_options true -i video="Integrated Camera"
 ```
 
 ---
@@ -141,4 +190,4 @@ sudo dnf install ffmpeg      # Fedora
 ## Uninstall
 
 - **Plugin**: `/plugin uninstall webcam-snap@webcam-snap-marketplace`
-- **Standalone skill**: `rm -rf ~/.claude/skills/webcam-snap`
+- **Standalone skill**: `rm -rf ~/.claude/skills/webcam-snap` (Windows: `Remove-Item -Recurse -Force "$env:USERPROFILE\.claude\skills\webcam-snap"`)

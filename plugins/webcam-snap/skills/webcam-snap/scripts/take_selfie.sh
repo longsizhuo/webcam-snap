@@ -1,50 +1,77 @@
-#!/bin/bash
-# 摄像头自拍脚本
+#!/usr/bin/env bash
+# 摄像头自拍脚本 (Linux / macOS) —— 单帧抓拍
+# 用法: take_selfie.sh [输出路径] [分辨率]
+# Windows 请改用同目录的 take_selfie.ps1
+set -euo pipefail
 
-set -e
+OUTPUT_FILE="${1:-${TMPDIR:-/tmp}/selfie_$(date +%Y%m%d_%H%M%S).jpg}"
+RESOLUTION="${2:-1280x720}"
+OS="$(uname -s)"
 
-OUTPUT_FILE="${1:-/tmp/selfie_$(date +%Y%m%d_%H%M%S).jpg}"
-RESOLUTION="${2:-640x480}"
-
-echo "正在拍照..."
-echo "输出文件: $OUTPUT_FILE"
-echo "分辨率: $RESOLUTION"
-
-# 检查ffmpeg是否安装
-if ! command -v ffmpeg &> /dev/null; then
-    echo "错误: ffmpeg未安装"
-    echo "请安装: sudo apt install ffmpeg 或 brew install ffmpeg"
+# 检查 ffmpeg 是否安装
+if ! command -v ffmpeg >/dev/null 2>&1; then
+    echo "错误: 未找到 ffmpeg" >&2
+    case "$OS" in
+        Darwin) echo "请安装: brew install ffmpeg" >&2 ;;
+        *)      echo "请安装: sudo apt install ffmpeg  (Debian/Ubuntu) 或 sudo dnf install ffmpeg (Fedora)" >&2 ;;
+    esac
     exit 1
 fi
 
-# 检查摄像头设备
-if [ ! -e "/dev/video0" ]; then
-    echo "警告: /dev/video0 不存在，尝试查找其他摄像头设备..."
-    CAM_DEVICES=$(ls /dev/video* 2>/dev/null | head -1)
-    if [ -z "$CAM_DEVICES" ]; then
-        echo "错误: 未找到摄像头设备"
-        exit 1
+echo "系统: $OS"
+echo "输出文件: $OUTPUT_FILE"
+echo "分辨率: $RESOLUTION"
+echo "正在拍照..."
+
+case "$OS" in
+  Darwin)
+    # macOS: AVFoundation 后端，设备用序号；默认第 0 个视频设备，可用环境变量 CAMERA_INDEX 覆盖
+    # 列设备: ffmpeg -f avfoundation -list_devices true -i ""
+    DEVICE_INDEX="${CAMERA_INDEX:-0}"
+    echo "使用摄像头(AVFoundation)设备序号: $DEVICE_INDEX"
+    # 跳过前 30 帧，等待自动曝光收敛
+    if ! ffmpeg -y -loglevel error -f avfoundation -framerate 30 \
+            -video_size "$RESOLUTION" -i "$DEVICE_INDEX" \
+            -vf "select=gte(n\,30)" -frames:v 1 -vsync 0 \
+            -f image2 "$OUTPUT_FILE" 2>/dev/null; then
+        echo "指定分辨率失败，回退到设备默认参数重试..." >&2
+        ffmpeg -y -loglevel error -f avfoundation -i "$DEVICE_INDEX" \
+            -frames:v 1 -f image2 "$OUTPUT_FILE"
     fi
-    CAMERA_DEVICE="$CAM_DEVICES"
-else
-    CAMERA_DEVICE="/dev/video0"
-fi
+    ;;
+  Linux)
+    # Linux: V4L2 后端，设备为 /dev/video*
+    if [ -e "/dev/video0" ]; then
+        CAMERA_DEVICE="/dev/video0"
+    else
+        echo "警告: /dev/video0 不存在，查找其他摄像头设备..." >&2
+        CAMERA_DEVICE="$(ls /dev/video* 2>/dev/null | head -1 || true)"
+        if [ -z "$CAMERA_DEVICE" ]; then
+            echo "错误: 未找到摄像头设备 (/dev/video*)" >&2
+            exit 1
+        fi
+    fi
+    echo "使用摄像头(V4L2)设备: $CAMERA_DEVICE"
+    if ! ffmpeg -y -loglevel error -f v4l2 -video_size "$RESOLUTION" \
+            -i "$CAMERA_DEVICE" -vf "select=gte(n\,30)" -frames:v 1 -vsync 0 \
+            -f image2 "$OUTPUT_FILE" 2>/dev/null; then
+        echo "指定分辨率失败，回退到设备默认参数重试..." >&2
+        ffmpeg -y -loglevel error -f v4l2 -i "$CAMERA_DEVICE" \
+            -frames:v 1 -f image2 "$OUTPUT_FILE"
+    fi
+    ;;
+  *)
+    echo "错误: 不支持的系统 '$OS'。Windows 请使用同目录的 take_selfie.ps1" >&2
+    exit 1
+    ;;
+esac
 
-echo "使用摄像头设备: $CAMERA_DEVICE"
-
-# 拍照（跳过前30帧，等待自动曝光收敛）
-ffmpeg -y -loglevel error \
-    -f v4l2 \
-    -video_size "$RESOLUTION" \
-    -i "$CAMERA_DEVICE" \
-    -vf "select=gte(n\,30)" -frames:v 1 -vsync 0 \
-    -f image2 "$OUTPUT_FILE"
-
-if [ $? -eq 0 ]; then
+# -s 判断文件存在且非空
+if [ -s "$OUTPUT_FILE" ]; then
     echo "拍照成功!"
+    echo "文件路径: $OUTPUT_FILE"
     echo "文件大小: $(du -h "$OUTPUT_FILE" | cut -f1)"
-    echo "图片信息: $(file "$OUTPUT_FILE")"
 else
-    echo "拍照失败"
+    echo "拍照失败" >&2
     exit 1
 fi

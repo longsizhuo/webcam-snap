@@ -1,6 +1,6 @@
 # webcam-snap (skill)
 
-A Claude Code skill that captures a still photo from a local V4L2 webcam (`/dev/video0`) with `ffmpeg`, so Claude can see the physical environment.
+A skill that captures a still photo from the machine's local webcam with `ffmpeg`, so the agent can see the physical environment. Cross-platform: Linux (V4L2), macOS (AVFoundation), Windows (DirectShow).
 
 ## Standalone install (without the plugin system)
 
@@ -15,7 +15,8 @@ The result must be `~/.claude/skills/webcam-snap/SKILL.md`. Restart Claude Code 
 ## Files
 
 - `SKILL.md` — the skill definition (trigger conditions + capture instructions)
-- `scripts/take_selfie.sh` — capture helper with exposure warm-up and device fallback
+- `scripts/take_selfie.sh` — Linux/macOS capture helper (exposure warm-up, device fallback)
+- `scripts/take_selfie.ps1` — Windows capture helper (DirectShow, device auto-detect)
 
 ## Trigger
 

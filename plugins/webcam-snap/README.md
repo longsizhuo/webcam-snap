@@ -1,6 +1,6 @@
 # webcam-snap (plugin)
 
-Adds the **webcam-snap** skill to Claude Code: capture a still photo from a local V4L2 webcam (`/dev/video0`) with `ffmpeg`, then let Claude read and analyze it or send it to the user.
+Adds the **webcam-snap** skill: capture a still photo from the machine's local webcam with `ffmpeg`, then let the agent read and analyze it or send it to the user. Cross-platform — Linux (V4L2), macOS (AVFoundation), Windows (DirectShow).
 
 ## Install
 
@@ -17,7 +17,7 @@ Adds the **webcam-snap** skill to Claude Code: capture a still photo from a loca
 
 ## Requirements
 
-Linux with a V4L2 webcam and `ffmpeg` installed. See the [top-level README](../../README.md) and [docs/HOWTOUSE.md](../../docs/HOWTOUSE.md) for details and troubleshooting.
+A local webcam and `ffmpeg` installed (Linux/macOS/Windows). See the [top-level README](../../README.md) and [docs/HOWTOUSE.md](../../docs/HOWTOUSE.md) for details and troubleshooting.
 
 ## License
 
